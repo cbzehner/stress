@@ -1,0 +1,11 @@
+[package]
+name = "stress"
+version = "0.1.0"
+authors = ["Chris Zehner <cbzehner@gmail.com>"]
+description = "Put your programs to the test. Run a command multiple times and get back a summary of its exit codes."
+homepage = "https://github.com/cbzehner/stress"
+repository = "https://github.com/cbzehner/stress"
+edition = "2018"
+
+[dependencies]
+structopt = "0.3.15"
