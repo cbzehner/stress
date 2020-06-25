@@ -3,10 +3,14 @@ use std::process::Command;
 
 use structopt::StructOpt;
 
-/// Run a command in a loop and collect failures
+/// Put your programs to the test. Run a command in a loop and collect failures.
 #[derive(StructOpt)]
 struct Cli {
-    /// The command to run
+    #[structopt(required = true, min_values = 1, verbatim_doc_comment)]
+    /// The command to run. Precede this command with -- in order to pass in flags.
+    /// Usage:
+    ///   stress --count 10 -- echo "hello world"
+    ///   stress -- ls -a
     cmd: Vec<String>,
     /// The number of times to run the command
     #[structopt(short, long, default_value = "10")]
@@ -29,7 +33,6 @@ fn main() {
         command, arguments, &args.count
     );
     let mut runs = HashMap::new();
-    println!("command: {}, arguments: {}", command, arguments);
 
     // Run the command the specified number of times.
     for _ in 0..args.count {
