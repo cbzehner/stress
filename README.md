@@ -1,15 +1,15 @@
 # stress
 
-Put your programs to the test. Run a command multiple times and get back a summary of its exit codes.
+Put your programs to the test. Run a command in a loop and collect failures.
 
 ## Usage
 
 ```
-stress 0.1.0
-Run a command in a loop and collect failures
+stress 0.1.1
+Put your programs to the test. Run a command in a loop and collect failures
 
 USAGE:
-    stress [OPTIONS] [cmd]...
+    stress [OPTIONS] <cmd>...
 
 FLAGS:
     -h, --help       Prints help information
@@ -19,7 +19,10 @@ OPTIONS:
     -c, --count <count>    The number of times to run the command [default: 10]
 
 ARGS:
-    <cmd>...    The command to run
+    <cmd>...    The command to run. Precede this command with -- in order to pass in flags.
+                Usage:
+                  stress --count 10 -- echo "hello world"
+                  stress -- ls -a
 ```
 
 ## Installation

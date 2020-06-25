@@ -1,8 +1,8 @@
 [package]
 name = "stress"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Chris Zehner <cbzehner@gmail.com>"]
-description = "Put your programs to the test. Run a command multiple times and get back a summary of its exit codes."
+description = "Put your programs to the test. Run a command in a loop and collect failures."
 license = "MIT OR Apache-2.0"
 categories = ["command-line-utilities", "development-tools"]
 readme = "README.md"
