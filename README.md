@@ -16,7 +16,9 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -c, --count <count>    The number of times to run the command [default: 10]
+    -b, --bail <bail>        Exit immediately upon the first non-zero exit code
+    -r, --count <count>      The number of times to run the command [default: 10]
+    -s, --serial <serial>    Turn off parallelization of runs (default)
 
 ARGS:
     <cmd>...    The command to run. Precede this command with -- in order to pass in flags.
@@ -32,6 +34,12 @@ Install with `cargo install stress`
 ## Alternatives
 
 - [cargo-stress](https://lib.rs/crates/cargo-stress)
+
+## Contributions
+
+Contributions in the form of feedback via GitHub Issues or code contributions via Pull Requests are welcome!
+
+If you have functionality you want to add and don't know where to start, open an Issue so I can help out!
 
 # Credits
 
