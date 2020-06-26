@@ -42,6 +42,11 @@ impl Stress {
                 .entry(exit_code)
                 .or_insert(Outcome { exit_code, runs: 0 });
             outcome.runs += 1;
+
+            // Exit at the first non-Success value if --bail is enabled
+            if self.config.bail && exit_code != SUCCESS {
+                break;
+            }
         }
 
         // Print out the results.
@@ -123,9 +128,9 @@ impl fmt::Display for Args {
 /// Configuration passed in from the commandline.
 #[derive(Clone, Debug)]
 struct Config {
-    bail: Option<bool>,
+    bail: bool,
     runs: usize,
-    serial: Option<bool>,
+    // serial: bool,
 }
 
 impl Config {
@@ -133,7 +138,7 @@ impl Config {
         Config {
             bail: cli.bail,
             runs: cli.runs,
-            serial: cli.serial,
+            // serial: cli.serial,
         }
     }
 }
