@@ -13,13 +13,13 @@ pub struct Cli {
     cmd: Vec<String>,
     /// Exit immediately upon the first non-zero exit code.
     #[structopt(short, long)]
-    bail: Option<bool>,
+    bail: bool,
     /// The number of times to run the command.
     #[structopt(short, long, default_value = "10")]
     runs: usize,
-    /// Turn off parallelization of runs (default).
-    #[structopt(short, long)]
-    serial: Option<bool>,
+    // Turn off parallelization of runs (default).
+    // #[structopt(short, long)]
+    // serial: bool,
 }
 
 fn main() {

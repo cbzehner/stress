@@ -5,20 +5,19 @@ Put your programs to the test. Run a command in a loop and collect failures.
 ## Usage
 
 ```
-stress 0.1.1
+stress 0.2.0
 Put your programs to the test. Run a command in a loop and collect failures
 
 USAGE:
-    stress [OPTIONS] <cmd>...
+    stress [FLAGS] [OPTIONS] <cmd>...
 
 FLAGS:
+    -b, --bail       Exit immediately upon the first non-zero exit code
     -h, --help       Prints help information
     -V, --version    Prints version information
 
 OPTIONS:
-    -b, --bail <bail>        Exit immediately upon the first non-zero exit code
-    -r, --runs <runs>        The number of times to run the command [default: 10]
-    -s, --serial <serial>    Turn off parallelization of runs (default)
+    -r, --runs <runs>    The number of times to run the command [default: 10]
 
 ARGS:
     <cmd>...    The command to run. Precede this command with -- in order to pass in flags.
