@@ -131,8 +131,8 @@ struct Config {
 impl Config {
     fn new(cli: Cli) -> Self {
         Config {
-            runs: cli.count,
             bail: cli.bail,
+            runs: cli.runs,
             serial: cli.serial,
         }
     }

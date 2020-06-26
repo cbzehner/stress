@@ -16,7 +16,7 @@ pub struct Cli {
     bail: Option<bool>,
     /// The number of times to run the command.
     #[structopt(short, long, default_value = "10")]
-    count: usize,
+    runs: usize,
     /// Turn off parallelization of runs (default).
     #[structopt(short, long)]
     serial: Option<bool>,
