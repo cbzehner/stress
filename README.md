@@ -17,7 +17,7 @@ FLAGS:
 
 OPTIONS:
     -b, --bail <bail>        Exit immediately upon the first non-zero exit code
-    -r, --count <count>      The number of times to run the command [default: 10]
+    -r, --runs <runs>        The number of times to run the command [default: 10]
     -s, --serial <serial>    Turn off parallelization of runs (default)
 
 ARGS:
