@@ -1,5 +1,6 @@
 use std::collections::HashMap;
-use std::process::Command;
+use std::fmt;
+use std::process::{Command, Output};
 
 use structopt::StructOpt;
 
@@ -17,69 +18,135 @@ struct Cli {
     bail: Option<bool>,
     /// The number of times to run the command.
     #[structopt(short, long, default_value = "10")]
-    count: i8,
+    count: usize,
     /// Turn off parallelization of runs (default).
     #[structopt(short, long)]
     serial: Option<bool>,
 }
 
+const SUCCESS: i32 = 0;
+
 fn main() {
-    // Parse arguments from the user.
     let cli = Cli::from_args();
-    let loops = cli.count;
-    let (command, arguments) = parse_args(cli);
-    let (arg_str, args) = arguments;
+    let stress = Stress::new(cli);
+    stress.run()
+}
 
-    // Get ready to rumble.
-    println!(
-        "Running \"{} {}\" {} times...",
-        command,
-        arg_str,
-        args.len()
-    );
-    let mut runs = HashMap::new();
+/// The primary control structure for this utility.
+struct Stress {
+    cmd: Cmd,
+    results: HashMap<i32, Outcome>,
+    runs: usize,
+}
 
-    // Run the command the specified number of times.
-    for _ in 0..loops {
-        let output = Command::new(&command[..])
-            .args(&args)
-            .output()
-            .expect("failed to execute process");
-        let exit_code = output.status.code().expect("failed to exit cleanly");
+impl Stress {
+    pub fn new(cli: Cli) -> Self {
+        let runs = cli.count;
+        let cmd = Cmd::new(cli);
+        let results = HashMap::new();
 
-        // Store the results.
-        // TODO: Optionally include output from failures.
-        let run = runs.entry(exit_code).or_insert(0);
-        *run += 1; // Increment the count.
+        Stress { cmd, runs, results }
     }
 
-    // Print out the results.
-    println!(
-        "Over the course of {} runs of \"{} {}\"",
-        args.len(),
-        command,
-        arg_str
-    );
-    if runs.contains_key(&0) {
-        println!("[Success]");
-        println!("Exit Code\tOccurrences");
-        println!("0\t\t{}", runs.get(&0).unwrap());
-        runs.remove(&0);
-    }
-    if runs.len() > 0 {
-        println!("[Failure]");
-        println!("Exit Code\tOccurrences");
-        for (exit_code, count) in runs.iter() {
-            println!("{}\t\t{}", exit_code, count);
+    pub fn run(mut self) -> () {
+        // Get ready to rumble.
+        println!("Running \"{}\" {} times...", self.cmd, self.runs);
+
+        // Run the command the specified number of times.
+        for _ in 0..self.runs {
+            let output = self.cmd.clone().execute();
+            let exit_code = output.status.code().expect("failed to exit cleanly");
+
+            // Store the results.
+            // TODO: Optionally include output from failures.
+            let outcome = self
+                .results
+                .entry(exit_code)
+                .or_insert(Outcome { exit_code, runs: 0 });
+            outcome.runs += 1;
+        }
+
+        // Print out the results.
+        println!("Over the course of {} runs of \"{}\"", self.runs, self.cmd);
+        if self.results.contains_key(&SUCCESS) {
+            println!("[Success]");
+            println!("Exit Code\tOccurrences");
+            println!("{}", self.results.get(&SUCCESS).unwrap());
+            println!("");
+            self.results.remove(&0);
+        } else {
+            println!("[No Successes]");
+            println!("");
+        }
+        if self.results.len() > 0 {
+            println!("[Failure]");
+            println!("Exit Code\tOccurrences");
+            for (_, outcome) in self.results.iter() {
+                println!("{}", outcome);
+            }
+        } else {
+            println!("[No Failures]");
         }
     }
 }
 
-fn parse_args(cli: Cli) -> (String, (String, Vec<String>)) {
-    let command = String::from(&cli.cmd[0]);
-    let arguments_vec: Vec<String> = Vec::from(&cli.cmd[1..cli.cmd.len()]);
-    // TODO: Move this into a Display trait on a struct
-    let arguments_str: String = arguments_vec.iter().map(|s| s.chars()).flatten().collect();
+/// The command to be executed.
+#[derive(Clone)]
+struct Cmd {
+    program: String,
+    args: Args,
+}
 
-    (command, (arguments_str, arguments_vec))
+impl fmt::Display for Cmd {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} {}", self.program, self.args)
+    }
+}
+
+impl Cmd {
+    pub fn new(cli: Cli) -> Self {
+        let program = String::from(&cli.cmd[0]);
+        let args = Args {
+            list: Vec::from(&cli.cmd[1..cli.cmd.len()]),
+        };
+
+        Cmd { program, args }
+    }
+
+    pub fn execute(self) -> Output {
+        Command::new(&self.program[..])
+            .args(&self.args.list)
+            .output()
+            .expect("failed to execute process")
+    }
+}
+
+/// The arguments passed to the subcommand.
+#[derive(Clone)]
+struct Args {
+    list: Vec<String>,
+}
+
+impl fmt::Display for Args {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let display = self
+            .list
+            .iter()
+            .map(|s| s.chars())
+            .flatten()
+            .collect::<String>();
+        write!(f, "{}", display)
+    }
+}
+
+/// Store the outcome of each run for analysis.
+struct Outcome {
+    exit_code: i32,
+    runs: i32,
+}
+
+impl fmt::Display for Outcome {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}\t\t{}", self.exit_code, self.runs)
+    }
 }
