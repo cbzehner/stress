@@ -29,11 +29,14 @@ impl Stress {
     pub fn run(mut self) -> () {
         // Get ready to rumble.
         println!("Running \"{}\" {} times...", self.cmd, self.config.runs);
+        // If the --bail flag is set, the program may halt early. Record the actual run count for display later.
+        let mut cmd_runs = 0;
 
         // Run the command the specified number of times.
         for _ in 0..self.config.runs {
             let output = self.cmd.clone().execute();
             let exit_code = output.status.code().expect("failed to exit cleanly");
+            cmd_runs += 1;
 
             // Store the results.
             let outcome = self.results.entry(exit_code).or_insert(Outcome {
@@ -56,10 +59,7 @@ impl Stress {
         }
 
         // Print out the results.
-        println!(
-            "Over the course of {} runs of \"{}\"",
-            self.config.runs, self.cmd
-        );
+        println!("Over the course of {} runs of \"{}\"", cmd_runs, self.cmd);
         if self.config.output {
             for (_, outcome) in self.results.iter() {
                 let result = if outcome.exit_code == SUCCESS {

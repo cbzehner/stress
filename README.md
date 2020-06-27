@@ -5,7 +5,7 @@ Put your programs to the test. Run a command in a loop and collect failures.
 ## Usage
 
 ```
-stress 0.2.0
+stress 0.2.1
 Put your programs to the test. Run a command in a loop and collect failures
 
 USAGE:
