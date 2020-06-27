@@ -36,12 +36,18 @@ impl Stress {
             let exit_code = output.status.code().expect("failed to exit cleanly");
 
             // Store the results.
-            // TODO: Optionally include output from failures.
-            let outcome = self
-                .results
-                .entry(exit_code)
-                .or_insert(Outcome { exit_code, runs: 0 });
+            let outcome = self.results.entry(exit_code).or_insert(Outcome {
+                exit_code,
+                runs: 0,
+                stdout: None,
+            });
             outcome.runs += 1;
+
+            // Store the stdout from the run if one hasn't already been seen
+            if self.config.output && outcome.stdout.is_none() {
+                let stdout = String::from_utf8(output.stdout).unwrap_or_default();
+                outcome.stdout = Some(stdout)
+            }
 
             // Exit at the first non-Success value if --bail is enabled
             if self.config.bail && exit_code != SUCCESS {
@@ -54,24 +60,46 @@ impl Stress {
             "Over the course of {} runs of \"{}\"",
             self.config.runs, self.cmd
         );
-        if self.results.contains_key(&SUCCESS) {
-            println!("[Success]");
-            println!("Exit Code\tOccurrences");
-            println!("{}", self.results.get(&SUCCESS).unwrap());
-            println!("");
-            self.results.remove(&0);
-        } else {
-            println!("[No Successes]");
-            println!("");
-        }
-        if self.results.len() > 0 {
-            println!("[Failure]");
-            println!("Exit Code\tOccurrences");
+        if self.config.output {
             for (_, outcome) in self.results.iter() {
-                println!("{}", outcome);
+                let result = if outcome.exit_code == SUCCESS {
+                    "Success"
+                } else {
+                    "Failure"
+                };
+                println!("[{}]", result);
+                println!(
+                    "Exit Code {} ocurred {} times:",
+                    outcome.exit_code, outcome.runs,
+                );
+                match &outcome.stdout {
+                    Some(stdout) => {
+                        println!("Output:");
+                        println!("{}", stdout)
+                    }
+                    None => println!("No output recorded"),
+                }
             }
         } else {
-            println!("[No Failures]");
+            if self.results.contains_key(&SUCCESS) {
+                println!("[Success]");
+                println!("Exit Code\tOccurrences");
+                println!("{}", self.results.get(&SUCCESS).unwrap());
+                println!("");
+                self.results.remove(&0);
+            } else {
+                println!("[No Successes]");
+                println!("");
+            }
+            if self.results.len() > 0 {
+                println!("[Failure]");
+                println!("Exit Code\tOccurrences");
+                for (_, outcome) in self.results.iter() {
+                    println!("{}", outcome);
+                }
+            } else {
+                println!("[No Failures]");
+            }
         }
     }
 }
@@ -129,6 +157,7 @@ impl fmt::Display for Args {
 #[derive(Clone, Debug)]
 struct Config {
     bail: bool,
+    output: bool,
     runs: usize,
     // serial: bool,
 }
@@ -137,6 +166,7 @@ impl Config {
     fn new(cli: Cli) -> Self {
         Config {
             bail: cli.bail,
+            output: cli.output,
             runs: cli.runs,
             // serial: cli.serial,
         }
@@ -147,6 +177,7 @@ impl Config {
 struct Outcome {
     exit_code: i32,
     runs: i32,
+    stdout: Option<String>,
 }
 
 impl fmt::Display for Outcome {
