@@ -28,7 +28,7 @@ impl Stress {
 
     pub fn run(mut self) -> () {
         // Get ready to rumble.
-        println!("Running \"{}\" {} times...", self.cmd, self.config.runs);
+        println!("Starting {} runs of \"{}\"...", self.config.runs, self.cmd);
         // If the --bail flag is set, the program may halt early. Record the actual run count for display later.
         let mut cmd_runs = 0;
 
@@ -58,49 +58,40 @@ impl Stress {
             }
         }
 
-        // Print out the results.
-        println!("Over the course of {} runs of \"{}\"", cmd_runs, self.cmd);
+        // Print out the results. Results are printed in a different format depending on whether
+        // the --output flag is enabled or not.
+        let mut codes: Vec<_> = self.results.keys().collect();
+        codes.sort(); // Display the exit codes in numeric order
         if self.config.output {
-            for (_, outcome) in self.results.iter() {
+            for exit_code in codes {
+                let outcome = self.results.get(exit_code).unwrap();
                 let result = if outcome.exit_code == SUCCESS {
-                    "Success"
+                    "success"
                 } else {
-                    "Failure"
+                    "failure"
                 };
-                println!("[{}]", result);
                 println!(
-                    "Exit Code {} ocurred {} times:",
-                    outcome.exit_code, outcome.runs,
+                    "Exit Code {} ({}) occurred {} time(s). Output:",
+                    outcome.exit_code, result, outcome.runs,
                 );
                 match &outcome.stdout {
-                    Some(stdout) => {
-                        println!("Output:");
-                        println!("{}", stdout)
-                    }
+                    Some(stdout) => println!("{}", stdout),
                     None => println!("No output recorded"),
                 }
             }
         } else {
-            if self.results.contains_key(&SUCCESS) {
-                println!("[Success]");
-                println!("Exit Code\tOccurrences");
-                println!("{}", self.results.get(&SUCCESS).unwrap());
-                println!("");
-                self.results.remove(&0);
-            } else {
-                println!("[No Successes]");
-                println!("");
-            }
-            if self.results.len() > 0 {
-                println!("[Failure]");
-                println!("Exit Code\tOccurrences");
-                for (_, outcome) in self.results.iter() {
-                    println!("{}", outcome);
-                }
-            } else {
-                println!("[No Failures]");
+            println!("Exit Code\tRuns\tResult");
+            for exit_code in codes {
+                let outcome = self.results.get(exit_code).unwrap();
+                let result = if outcome.exit_code == SUCCESS {
+                    "success"
+                } else {
+                    "fail"
+                };
+                println!("{}\t{}", outcome, result);
             }
         }
+        println!("Completed {} runs of \"{}\"", cmd_runs, self.cmd);
     }
 }
 
@@ -113,7 +104,8 @@ struct Cmd {
 
 impl fmt::Display for Cmd {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} {}", self.program, self.args)
+        let cmd_str = format!("{} {}", self.program, self.args);
+        write!(f, "{}", cmd_str.trim())
     }
 }
 
