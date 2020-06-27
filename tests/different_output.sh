@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Chance=$(($RANDOM % 3))
+Chance=$((RANDOM % 3))
 
 if [ $Chance -eq 0 ]
 then
