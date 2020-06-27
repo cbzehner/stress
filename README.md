@@ -14,6 +14,8 @@ USAGE:
 FLAGS:
     -b, --bail       Exit immediately upon the first non-zero exit code
     -h, --help       Prints help information
+    -o, --output     Display the output (stdout) from runs. The output is grouped together by exit code. Each exit code
+                     will only show output for one run, even if there were several runs with that exit code
     -V, --version    Prints version information
 
 OPTIONS:
