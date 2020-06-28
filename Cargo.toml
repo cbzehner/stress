@@ -5,6 +5,7 @@ authors = ["Chris Zehner <cbzehner@gmail.com>"]
 description = "Put your programs to the test. Run a command in a loop and collect failures."
 license = "MIT OR Apache-2.0"
 categories = ["command-line-utilities", "development-tools"]
+keywords = ["test", "loop", "collect", "stress", "exit-codes"]
 readme = "README.md"
 repository = "https://github.com/cbzehner/stress"
 edition = "2018"
